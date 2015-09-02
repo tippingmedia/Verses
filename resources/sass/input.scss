@@ -1,0 +1,44 @@
+/*
+ * INPUT
+ */
+
+.bv_field {
+    .field{
+        margin-bottom: 0px;
+    }
+    .field > .input {
+        display: inline-block;
+        svg path{
+            fill: RGBA(35, 44, 56, 1);
+        }
+    }
+    .input + .bv_action--btn {
+        vertical-align: bottom;
+    }
+    .bv_elements{
+        padding-top: 8px;
+        .element {
+            position: relative;
+            transition: all 0.3s ease-out;
+            opacity: 1;
+            top: 0px !important;
+            left: 0px !important;
+            cursor:pointer;
+            border-bottom: 1px dotted transparent;
+            &:hover{
+                border-bottom: 1px dotted #eeeeee;
+            }
+        }
+        .element.remove{
+            transition: all 0.3s ease;
+            left: -80px !important;
+            opacity: 0;
+        }
+        .element.el-anim{
+            position: relative;
+            opacity: 0;
+            top: 0 !important;
+            left: -80px !important;
+        }
+    }
+}

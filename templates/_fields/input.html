@@ -1,0 +1,62 @@
+{% import "_includes/forms" as forms %}
+
+{% includeCssResource "verses/css/verses.css" %}
+{% includeJsResource "verses/vendor/js/en_bcv_parser.js" %}
+{% includeJsResource "verses/vendor/js/mustache.min.js" %}
+{% includeJsResource "verses/js/verses.min.js" %}
+<div class='bv_field ' id='{{ fieldId }}'>
+
+  <div class='field'>
+    <div class='input'>
+      <input class='text bv_action--field' type='text' size='50' name='{{ name }}' placeholder='Romans 10:9' />
+    </div>
+     <div id='{{ fieldId }}-bv-search' data-modid='{{ fieldId }}' class='btn bv_action--btn' title='Search Bible'><svg version="1.0" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+     width="17px" height="17px" viewBox="0 0 64 64" enable-background="new 0 0 64 64" xml:space="preserve">
+  <g>
+    <path fill="#231F20" d="M58.903,0.151L32,7.839L5.098,0.151C3.898-0.188,2.594,0.05,1.59,0.804C0.59,1.562,0,2.745,0,3.999V52
+      c0,1.785,1.184,3.355,2.902,3.848l28,8C31.262,63.949,31.629,64,32,64s0.738-0.051,1.098-0.152l28.001-8
+      c1.719-0.492,2.902-2.062,2.902-3.848V3.999c0-1.254-0.59-2.438-1.59-3.195C61.407,0.05,60.106-0.188,58.903,0.151z M8,9.304
+      l20,5.715v39.676L8,48.984V9.304z M56.001,48.984L36,54.695V15.019l20.001-5.715V48.984z"/>
+  </g>
+  </svg></div>
+  </div>
+{#   {{ 
+    forms.textField({
+      id: name,
+      name: name,
+      class: 'bv_action--field ',
+      size: 50
+    }) 
+  }} #}
+
+ 
+  <div id='{{ fieldId }}-elements' class='bv_elements'>
+    {% if value|length %}
+      {% for item in value %}
+          <div class="element unselectable removable" data-locale="{{ craft.locale }}"  data-editable="0" tabindex="0" style="top: 0px; left: 0px; z-index: 1;">
+            <input type="hidden" class="element--input" name="{{ name }}[{{ loop.index }}][reference]" value="{{ item.reference }}">
+            <input type="hidden" class="element--input" name="{{ name }}[{{ loop.index }}][osis]" value="{{ item.osis }}">
+            <a class="delete icon" title="Remove"></a>
+            <div class="label"><span class="title">{{ item.reference }}</span></div>
+          </div> 
+      {% endfor %}
+    {% endif %}
+  </div>
+
+  {% include 'verses/_fields/_modal' with { id: fieldId, version: version } %}
+ 
+  <script id='{{ fieldId }}-element' class='bv_element--template' type="x-tmpl-mustache"> 
+    <div class="element unselectable removable el-anim" data-locale="{{ craft.locale }}"  data-editable="0" tabindex="0" style="top: 0px; left: 0px; z-index: 1;">
+      <input type="hidden" class="element--input" name="{{ name }}[<%idx%>][reference]" value="<%passage%>">
+      <input type="hidden" class="element--input" name="{{ name }}[<%idx%>][osis]" value="<%osis%>">
+      <a class="delete icon" title="Remove"></a>
+      <div class="label"><span class="title"><%passage%></span></div>
+    </div>
+  </script>
+  <script id="{{ fieldId }}-result-template" class='bv_result--template' type="x-tmpl-mustache"> 
+    <div class="result" data-verse-id="<%id%>">
+      <h3><%reference%></h3>
+      <p class="p"><%&text%></p>
+    </div>
+  </script>
+</div>

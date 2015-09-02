@@ -1,0 +1,36 @@
+{% import "_includes/forms" as forms %}
+
+{# Available Bible Versions #}
+{% set versionOptions = [
+  { "value":"eng-ESV" , "label":"(ESV) English Standard Versions", "default":true },
+  { "value":"eng-NASB" , "label":"(NASB) New American Standard Bible"  },
+  { "value":"eng-NIV" , "label":"(NIV) New International Version" }
+] %}
+
+<h2>Verses Plugin Settings</h2>
+<p><a href='http://bibles.org' target='_blank' alt='Bibles.org website'>Bibles.org</a> is providing the API and engine by which we can search the bible. This is free of charge so you must obtain your own token and follow their <a href='http://bibles.org/pages/legal/#terms-api' target='_blank' alt='Bibles.org API legal terms'>licensing agreements</a>. <a href='http://bibles.org/pages/api' target='_blank' alt='Optain an API token'>Get Token &raquo;</a></p><br><br>
+
+{{ forms.textField({
+  first:        true,
+  label:        "Token"|t,
+  instructions: "Bibles.org api token."|t,
+  id:           'token',
+  name:         'token',
+  value:        settings.token is defined ? settings.token : '',
+  autofocus:    true,
+  errors:       settings.getErrors('token')
+}) }}
+
+{{ forms.selectField({
+    label: "Bible Version"|t,
+    instructions: "If no other version is selected this bible version will be used."|t,
+    id: 'bibleVersion',
+    name: 'bibleVersion',
+    options: versionOptions,
+    value: settings.bibleVersion,
+    toggle: true,
+    targetPrefix: 'bv-',
+    errors: settings.getErrors('bibleVersion')
+  }) }}
+
+  <br><br><br>

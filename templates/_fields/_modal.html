@@ -1,0 +1,60 @@
+{% set results = craft.verses.books({'version': version, 'include_chapters': 'true' }) %}
+<div id='{{ id }}-modal' class='elementselectormodal modal bv_modal state2' data-version='{{ version }}'>
+  <div class='body'>
+    <div class='content'>
+      <div class='main'>
+        <div class="toolbar">
+          <table class="inputs fullwidth collapsible">
+            <tbody>
+              <tr>
+                <td>
+                  <div class="texticon search icon">
+                    <input class="text nicetext fullwidth search bv_modal--search" type="text" autocomplete="off" placeholder="Search">
+                    <div class="clear hidden" title="Clear"></div>
+                  </div>
+                </td>
+                <td class="thin">
+                  <div class="btngroup fullwidth">
+                    <div class='btn bv_modal--select active' id='{{ id }}-select' data-icon="list" role='button' title='Select Book & Chapter'></div>
+                    <div class='btn bv_modal--verses' id='{{ id }}-listview' data-icon="section" role='button' title='Select Verses'></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="spinner hidden"></div>
+        </div>
+        <div class='bv-main'>
+          <div class='bv_modal--selectors books'>
+            {% for book in results %}
+                <div class='book' data-book-id='{{ book.id }}' book-ord='{{ book.ord }}'><span class='book--name'>{{ book.name }}</span>
+                  <div class='book--chapters'>{% spaceless %}
+                    {% for chpt in book.chapters %}
+                        <span class='book--chapter' data-chapter-id='{{ chpt.id }}'>{{ loop.index }}</span>
+                    {% endfor %}
+                    {% endspaceless %}</div>
+                </div>
+            {% endfor %}
+          </div>
+          <div class='bv_modal--list chapter--verses'>
+          </div>
+          <div class='bv_modal--error'>
+            <div class='error'>{{"No verses could be found by that query. Try another."|t}}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class='footer'>
+    <table class='btns'>
+      <tbody>
+          <tr>
+            <td >
+              <button class='btn submit' title="{{ 'Done'|t }}">{{ 'DONE'|t }}</button>
+              <button class='btn cancel' title="{{ 'Cancel'|t }}">{{ 'Cancel'|t }}</button>
+            </td>
+          </tr>
+        </tbody>
+    </table>
+  </div>
+</div>

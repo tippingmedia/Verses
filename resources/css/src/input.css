@@ -1,0 +1,32 @@
+/*
+ * INPUT
+ */
+.bv_field .field {
+  margin-bottom: 0px; }
+.bv_field .field > .input {
+  display: inline-block; }
+  .bv_field .field > .input svg path {
+    fill: RGBA(35, 44, 56, 1); }
+.bv_field .input + .bv_action--btn {
+  vertical-align: bottom; }
+.bv_field .bv_elements {
+  padding-top: 8px; }
+  .bv_field .bv_elements .element {
+    position: relative;
+    transition: all 0.3s ease-out;
+    opacity: 1;
+    top: 0px !important;
+    left: 0px !important;
+    cursor: pointer;
+    border-bottom: 1px dotted transparent; }
+    .bv_field .bv_elements .element:hover {
+      border-bottom: 1px dotted #eeeeee; }
+  .bv_field .bv_elements .element.remove {
+    transition: all 0.3s ease;
+    left: -80px !important;
+    opacity: 0; }
+  .bv_field .bv_elements .element.el-anim {
+    position: relative;
+    opacity: 0;
+    top: 0 !important;
+    left: -80px !important; }
