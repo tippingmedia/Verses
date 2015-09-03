@@ -357,7 +357,7 @@ var Readable = (function () {
             "single": 3
         };
 
-        this.single_chapter_books = {};
+        this.single_chapter_books = [];
 
         this._bcv = new bcv_parser();
     }
@@ -442,8 +442,10 @@ var Readable = (function () {
             if (c != null) {
                 if (v != null) {
                     if (c === "1" && (v !== "1" || is_range_start) && this.is_single_chapter_book(b)) {
+                        console.info("[1]:");
                         return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bv + v;
                     } else {
+                        console.info("[2]:");
                         return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bc + c + this.separators.cv + v;
                     }
                 } else {
@@ -477,7 +479,8 @@ var Readable = (function () {
                 return this.single_chapter_books[book];
             }
             osis = this.bcv.parse(book + " 2").osis();
-            ref = osis.split("-"), start = ref[0], end = ref[1];
+            // split('-') to split('.')
+            ref = osis.split("."), start = ref[0], end = ref[1];
             out = end != null ? false : true;
             this.single_chapter_books[book] = out;
             return out;
