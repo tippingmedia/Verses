@@ -196,10 +196,8 @@ class Readable{
         if (c != null) {
             if (v != null) {
                 if (c === "1" && (v !== "1" || is_range_start) && this.is_single_chapter_book(b)) {
-                    console.info("[1]:");
                     return "" + (this.get_best_book(b, output_type, is_single_chapter)) + this.separators.bv + v;
                 } else {
-                    console.info("[2]:");
                     return "" + (this.get_best_book(b, output_type, is_single_chapter)) + this.separators.bc + c + this.separators.cv + v;
                 }
             } else {
