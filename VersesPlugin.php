@@ -38,7 +38,6 @@ class VersesPlugin extends BasePlugin
     {
         return 'Tipping Media';
     }
-
     /**
      * Get Developer URL
      */
@@ -46,6 +45,27 @@ class VersesPlugin extends BasePlugin
     {
         return 'http://tippingmedia.com/';
     }
+
+    public function getDescription()
+    {
+        return "Bible Verses For Craft CMS.";
+    }
+
+    public function getIconPath()
+    {
+        return craft()->path->getPluginsPath().'/resources/verses.svg';
+    }
+
+    public function getDocumentationUrl()
+    {
+        return 'https://github.com/tippingmedia/Verses';
+    }
+
+    public function getReleaseFeedUrl()
+    {
+        return "https://venticalendar.io/plugin/releases.json";
+    }
+    
 
     /**
      * Has CP Section
