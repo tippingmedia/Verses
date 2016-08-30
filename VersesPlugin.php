@@ -53,7 +53,7 @@ class VersesPlugin extends BasePlugin
 
     public function getIconPath()
     {
-        return craft()->path->getPluginsPath().'/resources/verses.svg';
+        return craft()->path->getPluginsPath().'/resources/icon.svg';
     }
 
     public function getDocumentationUrl()
