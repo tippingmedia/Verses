@@ -19,22 +19,22 @@ Add the Verses input to one of your Sections.
 </code></pre>
 Or you can use the Hook provided
 <pre><code>{% hook 'fums' %}</code></pre>
+
+### Verses Input
 The input saves an array of objects. The single object includes:
 
-<code>
-    {
+<pre><code>{
     reference: Romans 10:9,
     osis: Rom.10.9
-    }
-</code>
+}
+</code></pre>
 
-#### To output your reference from the input.
-<code>{{ entry.versesInput.reference }}</code>
-
-<code>{{ entry.versesInput.osis }}</code>
+#### To output your first reference from the input.
+<pre><code>{{ entry.versesInput[0].reference }}</code>
+<code>{{ entry.versesInput[0].osis }}</code></pre>
 
 You can specify a different version than the one selected in the Verses settings.
-<pre><code>{% for item in entry.bibleVerses %}
+<pre><code>{% for item in entry.versesInput %}
     {{ item.reference }}
     {{ item|passage({'version':'eng-ESV'})|raw }}
 {% endfor %}
@@ -56,7 +56,6 @@ You can specify a different version than the one selected in the Verses settings
     {{ item.name }}
 {% endfor %}
 </code></pre>
-
 
 
 ### License
