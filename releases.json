@@ -1,5 +1,16 @@
 [
     {
+        "version": "0.2.0",
+        "downloadUrl": "https://github.com/tippingmedia/Verses/archive/master.zip",
+        "date": "2016-10-21T08:42:00",
+        "notes": [
+            "[Added] King James Version support",
+            "[Added] Quick verse view HUD on verse click",
+            "[Added] Hook to output FUMS data",
+            "[Fixed] Placement of book icon"
+        ]
+    },
+    {
         "version": "0.1.2",
         "downloadUrl": "https://github.com/tippingmedia/Verses/archive/master.zip",
         "date": "2016-08-30T09:00:00-08:00",
