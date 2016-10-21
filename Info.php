@@ -2,4 +2,4 @@
 
 namespace Craft;
 
-define('VERSES_VERSION', '0.1.2');
+define('VERSES_VERSION', '0.2.1');
