@@ -17,6 +17,8 @@ Add the Verses input to one of your Sections.
     {{ item|raw }}
 {% endfor %}
 </code></pre>
+Or you can use the Hook provided
+<pre><code>{% hook 'fums' %}</code></pre>
 The input saves an array of objects. The single object includes:
 
 <code>
@@ -26,11 +28,34 @@ The input saves an array of objects. The single object includes:
     }
 </code>
 
-To output your reference.
-
+#### To output your reference from the input.
 <code>{{ entry.versesInput.reference }}</code>
 
 <code>{{ entry.versesInput.osis }}</code>
+
+You can specify a different version than the one selected in the Verses settings.
+<pre><code>{% for item in entry.bibleVerses %}
+    {{ item.reference }}
+    {{ item|passage({'version':'eng-ESV'})|raw }}
+{% endfor %}
+</code></pre>
+
+#### Output a chapter without the input
+*note it uses OSIS notation
+<pre><code>{% set passages = craft.verses.verses({'chapter':"eng-ESV:Rom.8"}) %}
+{% if passages|length %}
+    {% for item in passages %}
+        {{ item.text|raw }}
+    {% endfor %}
+{% endif %}
+</code></pre>
+
+#### Output the books of the bible
+<pre><code>{% set books = craft.verses.books({"version":"eng-ESV"}) %}
+{% for item in books %}
+    {{ item.name }}
+{% endfor %}
+</code></pre>
 
 
 
