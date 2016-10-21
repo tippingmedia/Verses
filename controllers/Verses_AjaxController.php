@@ -22,8 +22,8 @@ class Verses_AjaxController extends BaseController
         $postData = craft()->request->getPost();
         $verses = craft()->verses_guzzle->get($postData);
         $this->returnJson($verses);
-
     }
+    
 
     /**
      * return Fair Use Management scripts from Bibles.org api.

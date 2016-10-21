@@ -50,6 +50,7 @@ class BvInput{
             field = this.inputDom.querySelector('.bv_action--field'),
             elements = this.inputDom.querySelector('.bv_elements'),
             modal = this.modal;
+        let huds = [];
 
 
         /** When book button click open modal */
@@ -89,15 +90,69 @@ class BvInput{
 
         /** listens for element delete button click */
         elements.addEventListener('click', function (e) {
+
+            // clicked remove icon
             if (e.target && e.target.nodeName == "A") {
-                var tg = e.target;
+                const tg = e.target;
                 tg.parentNode.classList.add('remove');
-                var transitionEvent = $this.whichTransitionEvent();
+                const transitionEvent = $this.whichTransitionEvent();
                 tg.parentNode.addEventListener(transitionEvent, removeElement);
                 function removeElement(event){
                     tg.parentNode.removeEventListener(transitionEvent, removeElement);
                     $this.deleteElement(event.target);
                 }
+            }
+
+            // clicked the element
+            if ( ( e.target && e.target.nodeName !== "A" ) && 
+                ( e.target.classList.contains('element') || 
+                    e.target.parentNode.classList.contains('element') || 
+                    e.target.parentNode.parentNode.classList.contains('element'))
+                ) {
+
+                let tg = e.target;
+
+                if ( e.target.nodeName === "DIV" && e.target.classList.contains('element') ) {
+                    tg = e.target;
+                }else if( e.target.nodeName === "INPUT" || (e.target.nodeName === "DIV" && e.target.classList.contains('label')) ) {
+                    tg = e.target.parentNode;
+                }else if ( e.target.nodeName === "SPAN" && e.target.classList.contains('title') ) {
+                    tg = e.target.parentNode.parentNode;
+                }
+                
+                const value = tg.querySelectorAll('input')[1].value;
+
+                //NEED CLEANER WAY TO FETCH SEARCH
+                Craft.postActionRequest('verses/ajax/getPassages', 
+                {
+                    'apiType': 'search',
+                    'query': value,
+                    'version': $this._modal._container.dataset.version 
+                }, 
+                function(ref){ 
+                    if (!huds[value]) {
+                        const passage = ref.response.search.result.passages[0];
+                        const hudContents = `
+                            <div class="hud-header">
+                                <strong>${passage.display}</strong>
+                            </div>
+                            <div class="content-reference-hud">${passage.text}<div class="copyright">${passage.copyright}</div></div>`;
+
+                        const hud = new Garnish.HUD( $(e.target), $(hudContents), {
+                            bodyClass: 'verses-reference-hud',
+                            closeOtherHUDs: true,
+                            minBodyWidth: 200
+                        });
+
+                        hud.$hud.attr("id",value);
+                        huds[value] = hud;
+
+                        hud.show();
+                    }else{
+                        huds[value].show();
+                    }
+
+                });
             }
         },false);
 
@@ -147,7 +202,8 @@ class BvInput{
 
     /** Creates element tag input */
     createTagElement (passage){
-        var elements = this.inputDom.querySelector('.bv_elements'),
+        var $this = this,
+            elements = this.inputDom.querySelector('.bv_elements'),
             template = this.inputDom.querySelector('.bv_element--template').innerHTML,
             output = {},
             idx = elements.querySelectorAll('.element'),
@@ -170,6 +226,14 @@ class BvInput{
                 anims[i].classList.remove('el-anim');
             }
         },20);
+
+        // Load passage into cache for HUD.
+        Craft.postActionRequest('verses/ajax/getPassages', 
+            {
+                'apiType': 'search',
+                'query': output.osis,
+                'version': $this._modal._container.dataset.version 
+            }, function(){});
 
         this.clearField();
     }

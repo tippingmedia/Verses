@@ -1,13 +1,13 @@
+'use strict';
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 /*
  * BV ES6 CLASS
  */
-'use strict';
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
-
-var BvInput = (function () {
+var BvInput = function () {
     function BvInput(options) {
         _classCallCheck(this, BvInput);
 
@@ -26,6 +26,7 @@ var BvInput = (function () {
     _createClass(BvInput, [{
         key: 'initEvents',
 
+
         /**
          * Initiate event listeners
          */
@@ -36,6 +37,7 @@ var BvInput = (function () {
                 field = this.inputDom.querySelector('.bv_action--field'),
                 elements = this.inputDom.querySelector('.bv_elements'),
                 modal = this.modal;
+            var huds = [];
 
             /** When book button click open modal */
             btn.addEventListener('click', function (e) {
@@ -55,6 +57,7 @@ var BvInput = (function () {
             //     });
             // },false);
 
+
             /** When the keydown on the input is ENTER */
             field.onkeydown = function (e) {
                 e = e || event;
@@ -71,22 +74,62 @@ var BvInput = (function () {
 
             /** listens for element delete button click */
             elements.addEventListener('click', function (e) {
-                if (e.target && e.target.nodeName == "A") {
-                    var tg;
-                    var transitionEvent;
 
+                // clicked remove icon
+                if (e.target && e.target.nodeName == "A") {
                     (function () {
                         var removeElement = function removeElement(event) {
                             tg.parentNode.removeEventListener(transitionEvent, removeElement);
                             $this.deleteElement(event.target);
                         };
 
-                        tg = e.target;
-
+                        var tg = e.target;
                         tg.parentNode.classList.add('remove');
-                        transitionEvent = $this.whichTransitionEvent();
-
+                        var transitionEvent = $this.whichTransitionEvent();
                         tg.parentNode.addEventListener(transitionEvent, removeElement);
+                    })();
+                }
+
+                // clicked the element
+                if (e.target && e.target.nodeName !== "A" && (e.target.classList.contains('element') || e.target.parentNode.classList.contains('element') || e.target.parentNode.parentNode.classList.contains('element'))) {
+                    (function () {
+
+                        var tg = e.target;
+
+                        if (e.target.nodeName === "DIV" && e.target.classList.contains('element')) {
+                            tg = e.target;
+                        } else if (e.target.nodeName === "INPUT" || e.target.nodeName === "DIV" && e.target.classList.contains('label')) {
+                            tg = e.target.parentNode;
+                        } else if (e.target.nodeName === "SPAN" && e.target.classList.contains('title')) {
+                            tg = e.target.parentNode.parentNode;
+                        }
+
+                        var value = tg.querySelectorAll('input')[1].value;
+
+                        //NEED CLEANER WAY TO FETCH SEARCH
+                        Craft.postActionRequest('verses/ajax/getPassages', {
+                            'apiType': 'search',
+                            'query': value,
+                            'version': $this._modal._container.dataset.version
+                        }, function (ref) {
+                            if (!huds[value]) {
+                                var passage = ref.response.search.result.passages[0];
+                                var hudContents = '\n                            <div class="hud-header">\n                                <strong>' + passage.display + '</strong>\n                            </div>\n                            <div class="content-reference-hud">' + passage.text + '<div class="copyright">' + passage.copyright + '</div></div>';
+
+                                var hud = new Garnish.HUD($(e.target), $(hudContents), {
+                                    bodyClass: 'verses-reference-hud',
+                                    closeOtherHUDs: true,
+                                    minBodyWidth: 200
+                                });
+
+                                hud.$hud.attr("id", value);
+                                huds[value] = hud;
+
+                                hud.show();
+                            } else {
+                                huds[value].show();
+                            }
+                        });
                     })();
                 }
             }, false);
@@ -112,6 +155,7 @@ var BvInput = (function () {
          * @param  {string} passage bible verse
          * @return {boolean}         if passage is valid
          */
+
     }, {
         key: 'validatePassage',
         value: function validatePassage(passage, callback) {
@@ -133,10 +177,12 @@ var BvInput = (function () {
         }
 
         /** Creates element tag input */
+
     }, {
         key: 'createTagElement',
         value: function createTagElement(passage) {
-            var elements = this.inputDom.querySelector('.bv_elements'),
+            var $this = this,
+                elements = this.inputDom.querySelector('.bv_elements'),
                 template = this.inputDom.querySelector('.bv_element--template').innerHTML,
                 output = {},
                 idx = elements.querySelectorAll('.element'),
@@ -160,10 +206,18 @@ var BvInput = (function () {
                 }
             }, 20);
 
+            // Load passage into cache for HUD.
+            Craft.postActionRequest('verses/ajax/getPassages', {
+                'apiType': 'search',
+                'query': output.osis,
+                'version': $this._modal._container.dataset.version
+            }, function () {});
+
             this.clearField();
         }
 
         /** Delete and element from list */
+
     }, {
         key: 'deleteElement',
         value: function deleteElement(elm) {
@@ -175,6 +229,7 @@ var BvInput = (function () {
         /**
          * When element is removed reindex input name arrays
          */
+
     }, {
         key: 'reindexElements',
         value: function reindexElements() {
@@ -189,7 +244,7 @@ var BvInput = (function () {
                 var newname = name.replace(regex, "[" + t + "]");
                 elements[i - 1].setAttribute('name', newname);
                 i++;
-                // only increment t every two times.
+                // only increment t every two times. 
                 if (m == 2) {
                     m = 1;
                     t++;
@@ -247,9 +302,9 @@ var BvInput = (function () {
     }]);
 
     return BvInput;
-})();
+}();
 
-var Readable = (function () {
+var Readable = function () {
     function Readable(options) {
         _classCallCheck(this, Readable);
 
@@ -344,9 +399,9 @@ var Readable = (function () {
             "bc": " ",
             "bv": " ",
             "cv": ":",
-            "range_b": '—',
-            "range_c": '—',
-            "range_v": '–',
+            "range_b": '\u2014',
+            "range_c": '\u2014',
+            "range_v": '\u2013',
             "sequence": ", "
         };
 
@@ -518,9 +573,9 @@ var Readable = (function () {
     }]);
 
     return Readable;
-})();
+}();
 
-var Modal = (function () {
+var Modal = function () {
     function Modal(properties) {
         _classCallCheck(this, Modal);
 
@@ -558,6 +613,7 @@ var Modal = (function () {
         /*
          * Set modal element events
          */
+
     }, {
         key: 'initModalEvents',
         value: function initModalEvents() {
@@ -621,30 +677,9 @@ var Modal = (function () {
                 }
 
                 //GET CLOSETS ELEMENT WITH SELECTOR
-                function closest(_x, _x2) {
-                    var _left;
-
-                    var _again = true;
-
-                    _function: while (_again) {
-                        var el = _x,
-                            sel = _x2;
-                        _again = false;
-
-                        if (el != null) {
-                            if (el.matches(sel)) {
-                                return el;
-                            } else {
-                                if (_left = el.querySelector(sel)) {
-                                    return _left;
-                                }
-
-                                _x = el.parentNode;
-                                _x2 = sel;
-                                _again = true;
-                                continue _function;
-                            }
-                        }
+                function closest(el, sel) {
+                    if (el != null) {
+                        return el.matches(sel) ? el : el.querySelector(sel) || closest(el.parentNode, sel);
                     }
                 }
             }, false);
@@ -670,6 +705,7 @@ var Modal = (function () {
         /**
          * Search bible by chapter
          */
+
     }, {
         key: 'searchChapters',
         value: function searchChapters(ref, callback) {
@@ -699,6 +735,7 @@ var Modal = (function () {
         /**
          * Search bible by keyword phrase
          */
+
     }, {
         key: 'searchBible',
         value: function searchBible(value) {
@@ -718,12 +755,11 @@ var Modal = (function () {
                     $this.searchView(results.verses);
                 } else if (results.type === "passages") {
 
-                    // Get verses from chapters api
+                    // Get verses from chapters api 
                     var result = results.passages[0],
                         parsedEURL = $this.parseUrl(result.path),
                         start_verse_id = result.start_verse_id,
                         osis = parsedEURL.segments[1];
-
                     // Get all verses in Chapter
                     $this.searchVerses({
                         'apiType': 'chapters',
@@ -769,6 +805,7 @@ var Modal = (function () {
          * @param  {Function} callback return verses array
          * @return {array}            verses
          */
+
     }, {
         key: 'searchVerses',
         value: function searchVerses(options, callback) {
@@ -785,6 +822,7 @@ var Modal = (function () {
         /*
         * List Verses
         */
+
     }, {
         key: 'listView',
         value: function listView(data) {
@@ -815,8 +853,8 @@ var Modal = (function () {
                 _iteratorError = err;
             } finally {
                 try {
-                    if (!_iteratorNormalCompletion && _iterator['return']) {
-                        _iterator['return']();
+                    if (!_iteratorNormalCompletion && _iterator.return) {
+                        _iterator.return();
                     }
                 } finally {
                     if (_didIteratorError) {
@@ -841,6 +879,7 @@ var Modal = (function () {
          * Ouputs the search results to the chapter--verses dom
          * @param  {obj} data {array of verses}
          */
+
     }, {
         key: 'searchView',
         value: function searchView(data) {
@@ -873,8 +912,8 @@ var Modal = (function () {
                     _iteratorError2 = err;
                 } finally {
                     try {
-                        if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-                            _iterator2['return']();
+                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
+                            _iterator2.return();
                         }
                     } finally {
                         if (_didIteratorError2) {
@@ -897,6 +936,7 @@ var Modal = (function () {
          * Selects the verses searched for in chapter--verses dom
          * @param {array} refs [array of osis chapter verses  eng-ESV:Rom.8.28]
          */
+
     }, {
         key: 'setVerse',
         value: function setVerse(refs) {
@@ -922,6 +962,7 @@ var Modal = (function () {
          * Set the state of the modal
          * Toggle specific views
          */
+
     }, {
         key: 'modalState',
         value: function modalState(pos) {
@@ -955,6 +996,7 @@ var Modal = (function () {
          * Collect all verses with class selected from modal list
          * Sets modal variable outputVerses
          */
+
     }, {
         key: 'collectVerses',
         value: function collectVerses() {
@@ -993,6 +1035,7 @@ var Modal = (function () {
         /**
          * TOGGLE NODE CLASS ie9+
          */
+
     }, {
         key: 'toggleClass',
         value: function toggleClass(el, className) {
@@ -1013,6 +1056,7 @@ var Modal = (function () {
          * @param  {string} passage string of bible verse(s)
          * @return {array}  array of verses split comma
          */
+
     }, {
         key: 'separateVerses',
         value: function separateVerses(passage) {
@@ -1028,6 +1072,7 @@ var Modal = (function () {
          * @param  {string} url 
          * @return {object} parts of a url
          */
+
     }, {
         key: 'parseUrl',
         value: function parseUrl(url) {
@@ -1039,7 +1084,7 @@ var Modal = (function () {
                 host: a.hostname,
                 port: a.port,
                 query: a.search,
-                params: (function () {
+                params: function () {
                     var ret = {},
                         seg = a.search.replace(/^\?/, '').split('&'),
                         len = seg.length,
@@ -1053,7 +1098,7 @@ var Modal = (function () {
                         ret[s[0]] = s[1];
                     }
                     return ret;
-                })(),
+                }(),
                 file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
                 hash: a.hash.replace('#', ''),
                 path: a.pathname.replace(/^([^\/])/, '/$1'),
@@ -1066,6 +1111,7 @@ var Modal = (function () {
          * Append bibles.org FUMS scripts to body
          * @param  {string} codeURL url to js file
          */
+
     }, {
         key: 'fums',
         value: function fums(codeURL) {
@@ -1077,6 +1123,7 @@ var Modal = (function () {
         /*
         * Toggle spinner
         */
+
     }, {
         key: 'toggleSpinner',
         value: function toggleSpinner() {
@@ -1134,7 +1181,7 @@ var Modal = (function () {
     }]);
 
     return Modal;
-})();
+}();
 
 (function () {
 
@@ -1142,6 +1189,7 @@ var Modal = (function () {
     if (![].includes) {
         Array.prototype.includes = function (searchElement /*, fromIndex*/) {
             'use strict';
+
             var O = Object(this);
             var len = parseInt(O.length) || 0;
             if (len === 0) {

@@ -8,7 +8,7 @@
   .bv_field .field > .input svg path {
     fill: RGBA(35, 44, 56, 1); }
 .bv_field .input + .bv_action--btn {
-  vertical-align: bottom; }
+  vertical-align: top; }
 .bv_field .bv_elements {
   padding-top: 8px; }
   .bv_field .bv_elements .element {
@@ -20,7 +20,7 @@
     cursor: pointer;
     border-bottom: 1px dotted transparent; }
     .bv_field .bv_elements .element:hover {
-      border-bottom: 1px dotted #eeeeee; }
+      color: #428BCA; }
   .bv_field .bv_elements .element.remove {
     transition: all 0.3s ease;
     left: -80px !important;
@@ -30,3 +30,53 @@
     opacity: 0;
     top: 0 !important;
     left: -80px !important; }
+
+.verses-reference-hud {
+  -webkit-box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  -ms-box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2); }
+  .verses-reference-hud .main-container {
+    padding-bottom: 5px;
+    background-color: white; }
+  .verses-reference-hud .main {
+    background-color: #ffffff;
+    max-height: 375px;
+    overflow-y: scroll; }
+  .verses-reference-hud .content-reference-hud {
+    max-width: 275px;
+    padding: 0px !important;
+    color: #222222; }
+    .verses-reference-hud .content-reference-hud .chapter,
+    .verses-reference-hud .content-reference-hud .p,
+    .verses-reference-hud .content-reference-hud .result,
+    .verses-reference-hud .content-reference-hud p[class*='q'] {
+      font-size: 14px;
+      line-height: 1.6;
+      font-weight: 100; }
+    .verses-reference-hud .content-reference-hud p[class*='q'] {
+      margin-left: 0px;
+      line-height: 1.2;
+      font-size: 14px; }
+    .verses-reference-hud .content-reference-hud .result > h3 {
+      margin-bottom: 0px; }
+    .verses-reference-hud .content-reference-hud .result {
+      margin-bottom: 25px;
+      cursor: pointer; }
+    .verses-reference-hud .content-reference-hud sup {
+      padding-right: 3px;
+      color: #aaaaaa; }
+    .verses-reference-hud .content-reference-hud span {
+      cursor: pointer; }
+    .verses-reference-hud .content-reference-hud span.selected,
+    .verses-reference-hud .content-reference-hud span.active {
+      border-bottom: 1px dotted #dddddd;
+      background-color: #fef9e0; }
+    .verses-reference-hud .content-reference-hud em {
+      font-style: normal;
+      border-bottom: 1px dotted #dddddd;
+      background-color: #fef9e0; }
+    .verses-reference-hud .content-reference-hud div.copyright {
+      margin-top: 10px;
+      font-size: 10px;
+      line-height: 1.2;
+      color: #aaaaaa; }

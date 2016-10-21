@@ -6,6 +6,11 @@ var gulp = require('gulp'),
     gulpLoadPlugins = require('gulp-load-plugins'),
     $ = gulpLoadPlugins(),
     sass = require('gulp-ruby-sass');
+  const babel = require('gulp-babel');
+
+  require("babel-core").transform("code", {
+    presets: ["es2015"]
+  });
 
 
 
@@ -57,7 +62,9 @@ gulp.task('scripts', function(){
   return gulp.src(paths.process.scripts)
     .pipe($.changed('js/src/**/*.js'))
     .pipe($.concat('verses.js'))
-    .pipe($.babel())
+    .pipe(babel({
+      presets: ['es2015']
+    }))
     .pipe(gulp.dest('js/'));
 });
 

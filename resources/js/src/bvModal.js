@@ -232,7 +232,6 @@ class Modal{
                         parsedEURL = $this.parseUrl(result.path),
                         start_verse_id = result.start_verse_id,
                         osis = parsedEURL.segments[1];
-
                     // Get all verses in Chapter
                     $this.searchVerses(
                         {
