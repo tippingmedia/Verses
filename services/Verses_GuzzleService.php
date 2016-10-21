@@ -121,7 +121,7 @@ class Verses_GuzzleService extends BaseApplicationComponent
       if ($cachedResponse) 
       {
         // adds to the FUMS array
-        //array_push($this->fums, $cachedResponse['response']['meta']['fums']);
+        array_push($this->fums, $cachedResponse['response']['meta']['fums']);
         return $cachedResponse;
       }
  
@@ -151,7 +151,7 @@ class Verses_GuzzleService extends BaseApplicationComponent
         craft()->fileCache->set($url, $references);
 
         //set FUMS Array
-        array_push($this->fums, $cachedResponse['response']['meta']['fums']);
+        array_push($this->fums, $references['response']['meta']['fums']);
 
         return $references;
 

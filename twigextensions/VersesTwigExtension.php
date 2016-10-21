@@ -37,16 +37,21 @@ class VersesTwigExtension extends \Twig_Extension
   }
 
   
-  function getPassage($str, array $criteria = array())
+  function getPassage($refObj, array $criteria = array())
   {
     
-    $newStr = str_replace(" ", "+", $str);
     $criteria['apiType'] = 'passage';
-    $criteria['passage'] = $newStr;
+    $criteria['passage'] = $this->sanitizeRef($refObj);
+    $output = "";
 
     $response = craft()->verses_guzzle->get($criteria);
+    
+    if ($response['response']['search']['result']['passages']) 
+    {
+      $output = strip_tags($response['response']['search']['result']['passages'][0]['text']);
+    }
 
-    return strip_tags($response['response']['search']['result']['passages'][0]['text']);
+    return $output;
   }
 
 
@@ -60,6 +65,21 @@ class VersesTwigExtension extends \Twig_Extension
       array_push($output, strip_tags($verse['text']));
     }
     return implode(" ", $output);
+  }
+
+
+  function sanitizeRef($refObj)
+  {
+    if (is_array($refObj) && array_key_exists('osis',$refObj)) 
+    {
+      $reference = $refObj['osis'];
+    }
+    elseif (is_string($refObj))
+    {
+      $reference = str_replace(" ", "+", $refObj);
+    }
+
+    return $reference;
   }
 
 }

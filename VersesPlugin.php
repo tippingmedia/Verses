@@ -75,6 +75,15 @@ class VersesPlugin extends BasePlugin
         return false;
     }
 
+    public function init()
+    {
+        craft()->templates->hook('fums', function(&$context)
+        {
+            $response = craft()->verses_fums->renderFums();
+            return $response;
+        });
+    }
+
     /**
      * Define Settings
      */
