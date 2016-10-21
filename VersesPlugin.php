@@ -63,7 +63,7 @@ class VersesPlugin extends BasePlugin
 
     public function getReleaseFeedUrl()
     {
-        return "https://venticalendar.io/plugin/releases.json";
+        return "https://github.com/tippingmedia/Verses/blob/master/releases.json";
     }
     
 
