@@ -75,7 +75,7 @@ class Verses_GuzzleService extends BaseApplicationComponent
             // &include_chapters = true
             // &testament = NT
             
-            $query = "versions/" . $options['version'] . "/books.js?" . $params;
+            $query = "versions/" . $options['version'] . "/books.js?include_chapters=true";
           break;
 
         case 'verses':

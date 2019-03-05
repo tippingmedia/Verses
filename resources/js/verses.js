@@ -1,16 +1,9 @@
-'use strict';
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
 /*
  * BV ES6 CLASS
  */
-var BvInput = function () {
-    function BvInput(options) {
-        _classCallCheck(this, BvInput);
+class BvInput {
 
+    constructor(options) {
         this._inputDom = document.getElementById(options.item);
         this._bcv = new bcv_parser();
         this._modal = new Modal({
@@ -23,291 +16,267 @@ var BvInput = function () {
         this.initEvents();
     }
 
-    _createClass(BvInput, [{
-        key: 'initEvents',
+    get inputDom() {
+        return this._inputDom;
+    }
+
+    set inputDom(obj) {
+        this._inputDom = obj;
+    }
+
+    get bcv() {
+        return this._bcv;
+    }
+
+    set bcv(newBCV) {
+        this._bcv = newBCV;
+    }
+
+    get modal() {
+        return this._modal;
+    }
+
+    /**
+     * Initiate event listeners
+     */
+    initEvents() {
+
+        var $this = this,
+            btn = this.inputDom.querySelector('.bv_action--btn'),
+            field = this.inputDom.querySelector('.bv_action--field'),
+            elements = this.inputDom.querySelector('.bv_elements'),
+            modal = this.modal;
+        let huds = [];
+
+        /** When book button click open modal */
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            modal.openModal();
+        }, false);
+
+        /** Passage input action */
+        // field.addEventListener('change', function (e) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var value = e.currentTarget.value;
+        //     $this.validatePassage(value, function (response) {
+        //         if (response.error === false) {
+        //             $this.createTagElement(response.data);
+        //         };
+        //     });
+        // },false);
 
 
-        /**
-         * Initiate event listeners
-         */
-        value: function initEvents() {
-
-            var $this = this,
-                btn = this.inputDom.querySelector('.bv_action--btn'),
-                field = this.inputDom.querySelector('.bv_action--field'),
-                elements = this.inputDom.querySelector('.bv_elements'),
-                modal = this.modal;
-            var huds = [];
-
-            /** When book button click open modal */
-            btn.addEventListener('click', function (e) {
+        /** When the keydown on the input is ENTER */
+        field.onkeydown = function (e) {
+            e = e || event;
+            if (e.keyCode == 13) {
                 e.preventDefault();
-                modal.openModal();
-            }, false);
+                e.stopPropagation();
+                $this.validatePassage(e.currentTarget.value, function (response) {
+                    if (response.error === "none") {
+                        $this.createTagElement(response.data);
+                    };
+                });
+            }
+        };
 
-            /** Passage input action */
-            // field.addEventListener('change', function (e) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     var value = e.currentTarget.value;
-            //     $this.validatePassage(value, function (response) {
-            //         if (response.error === false) {
-            //             $this.createTagElement(response.data);
-            //         };
-            //     });
-            // },false);
+        /** listens for element delete button click */
+        elements.addEventListener('click', function (e) {
 
+            // clicked remove icon
+            if (e.target && e.target.nodeName == "A") {
+                const tg = e.target;
+                tg.parentNode.classList.add('remove');
+                const transitionEvent = $this.whichTransitionEvent();
+                tg.parentNode.addEventListener(transitionEvent, removeElement);
 
-            /** When the keydown on the input is ENTER */
-            field.onkeydown = function (e) {
-                e = e || event;
-                if (e.keyCode == 13) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    $this.validatePassage(e.currentTarget.value, function (response) {
-                        if (response.error === "none") {
-                            $this.createTagElement(response.data);
-                        };
-                    });
+                function removeElement(event) {
+                    tg.parentNode.removeEventListener(transitionEvent, removeElement);
+                    $this.deleteElement(event.target);
                 }
-            };
+            }
 
-            /** listens for element delete button click */
-            elements.addEventListener('click', function (e) {
+            // clicked the element
+            if (e.target && e.target.nodeName !== "A" && (e.target.classList.contains('element') || e.target.parentNode.classList.contains('element') || e.target.parentNode.parentNode.classList.contains('element'))) {
 
-                // clicked remove icon
-                if (e.target && e.target.nodeName == "A") {
-                    (function () {
-                        var removeElement = function removeElement(event) {
-                            tg.parentNode.removeEventListener(transitionEvent, removeElement);
-                            $this.deleteElement(event.target);
-                        };
+                let tg = e.target;
 
-                        var tg = e.target;
-                        tg.parentNode.classList.add('remove');
-                        var transitionEvent = $this.whichTransitionEvent();
-                        tg.parentNode.addEventListener(transitionEvent, removeElement);
-                    })();
+                if (e.target.nodeName === "DIV" && e.target.classList.contains('element')) {
+                    tg = e.target;
+                } else if (e.target.nodeName === "INPUT" || e.target.nodeName === "DIV" && e.target.classList.contains('label')) {
+                    tg = e.target.parentNode;
+                } else if (e.target.nodeName === "SPAN" && e.target.classList.contains('title')) {
+                    tg = e.target.parentNode.parentNode;
                 }
 
-                // clicked the element
-                if (e.target && e.target.nodeName !== "A" && (e.target.classList.contains('element') || e.target.parentNode.classList.contains('element') || e.target.parentNode.parentNode.classList.contains('element'))) {
-                    (function () {
+                const value = tg.querySelectorAll('input')[1].value;
 
-                        var tg = e.target;
+                //NEED CLEANER WAY TO FETCH SEARCH
+                Craft.postActionRequest('verses/ajax/getPassages', {
+                    'apiType': 'search',
+                    'query': value,
+                    'version': $this._modal._container.dataset.version
+                }, function (ref) {
+                    if (!huds[value]) {
+                        const passage = ref.response.search.result.passages[0];
+                        const hudContents = `
+                            <div class="hud-header">
+                                <strong>${passage.display}</strong>
+                            </div>
+                            <div class="content-reference-hud">${passage.text}<div class="copyright">${passage.copyright}</div></div>`;
 
-                        if (e.target.nodeName === "DIV" && e.target.classList.contains('element')) {
-                            tg = e.target;
-                        } else if (e.target.nodeName === "INPUT" || e.target.nodeName === "DIV" && e.target.classList.contains('label')) {
-                            tg = e.target.parentNode;
-                        } else if (e.target.nodeName === "SPAN" && e.target.classList.contains('title')) {
-                            tg = e.target.parentNode.parentNode;
-                        }
-
-                        var value = tg.querySelectorAll('input')[1].value;
-
-                        //NEED CLEANER WAY TO FETCH SEARCH
-                        Craft.postActionRequest('verses/ajax/getPassages', {
-                            'apiType': 'search',
-                            'query': value,
-                            'version': $this._modal._container.dataset.version
-                        }, function (ref) {
-                            if (!huds[value]) {
-                                var passage = ref.response.search.result.passages[0];
-                                var hudContents = '\n                            <div class="hud-header">\n                                <strong>' + passage.display + '</strong>\n                            </div>\n                            <div class="content-reference-hud">' + passage.text + '<div class="copyright">' + passage.copyright + '</div></div>';
-
-                                var hud = new Garnish.HUD($(e.target), $(hudContents), {
-                                    bodyClass: 'verses-reference-hud',
-                                    closeOtherHUDs: true,
-                                    minBodyWidth: 200
-                                });
-
-                                hud.$hud.attr("id", value);
-                                huds[value] = hud;
-
-                                hud.show();
-                            } else {
-                                huds[value].show();
-                            }
+                        const hud = new Garnish.HUD($(e.target), $(hudContents), {
+                            bodyClass: 'verses-reference-hud',
+                            closeOtherHUDs: true,
+                            minBodyWidth: 200
                         });
-                    })();
-                }
-            }, false);
 
-            /** 
-             * Listens for custom event versesReady.
-             * When event fired grabs selected verses from modal creates elements.
-             */
-            this.inputDom.addEventListener('versesReady', function (e) {
-                var items = $this.modal.outputVerses;
-                for (var i = 0, ii = items.length; i < ii; i++) {
-                    $this.validatePassage(items[i], function (response) {
-                        if (response.error === "none") {
-                            $this.createTagElement(response.data);
-                        };
-                    });
-                }
-            }, false);
-        }
+                        hud.$hud.attr("id", value);
+                        huds[value] = hud;
 
-        /**
-         * Validate passage with BVC parser
-         * @param  {string} passage bible verse
-         * @return {boolean}         if passage is valid
-         */
-
-    }, {
-        key: 'validatePassage',
-        value: function validatePassage(passage, callback) {
-            var parsed = this.bcv.parse(passage),
-                options = {};
-
-            if (parsed.entities.length > 0) {
-                options.error = "none";
-                options.data = parsed;
-            } else {
-                options.error = "error";
+                        hud.show();
+                    } else {
+                        huds[value].show();
+                    }
+                });
             }
+        }, false);
 
-            // Make sure the callback is a function​
-            if (typeof callback === "function") {
-                // Execute the callback function and pass the parameters to it​
-                callback(options);
-            }
-        }
-
-        /** Creates element tag input */
-
-    }, {
-        key: 'createTagElement',
-        value: function createTagElement(passage) {
-            var $this = this,
-                elements = this.inputDom.querySelector('.bv_elements'),
-                template = this.inputDom.querySelector('.bv_element--template').innerHTML,
-                output = {},
-                idx = elements.querySelectorAll('.element'),
-                readable = new Readable(),
-                verse;
-
-            Mustache.tags = ["<%", "%>"];
-            Mustache.parse(template);
-
-            output.osis = passage.osis();
-            output.passage = readable.osis_to_readable("long", output.osis);
-            output.idx = idx.length + 1;
-
-            var element = Mustache.render(template, output);
-            $(this.inputDom).find('.bv_elements').append(element);
-
-            var anims = elements.querySelectorAll('.el-anim');
-            setTimeout(function () {
-                for (var i = 0; i < anims.length; i++) {
-                    anims[i].classList.remove('el-anim');
-                }
-            }, 20);
-
-            // Load passage into cache for HUD.
-            Craft.postActionRequest('verses/ajax/getPassages', {
-                'apiType': 'search',
-                'query': output.osis,
-                'version': $this._modal._container.dataset.version
-            }, function () {});
-
-            this.clearField();
-        }
-
-        /** Delete and element from list */
-
-    }, {
-        key: 'deleteElement',
-        value: function deleteElement(elm) {
-            var el = elm;
-            el.parentNode.removeChild(el);
-            this.reindexElements();
-        }
-
-        /**
-         * When element is removed reindex input name arrays
+        /** 
+         * Listens for custom event versesReady.
+         * When event fired grabs selected verses from modal creates elements.
          */
+        this.inputDom.addEventListener('versesReady', function (e) {
+            var items = $this.modal.outputVerses;
+            for (var i = 0, ii = items.length; i < ii; i++) {
+                $this.validatePassage(items[i], function (response) {
+                    if (response.error === "none") {
+                        $this.createTagElement(response.data);
+                    };
+                });
+            }
+        }, false);
+    }
 
-    }, {
-        key: 'reindexElements',
-        value: function reindexElements() {
-            var elmWrapper = this.inputDom.querySelector('.bv_elements'),
-                elements = elmWrapper.querySelectorAll('.element--input');
-            var regex = new RegExp(/([^a-zA-Z]\d*\])/);
-            var t = 1,
-                i = 1,
+    /**
+     * Validate passage with BVC parser
+     * @param  {string} passage bible verse
+     * @return {boolean}         if passage is valid
+     */
+    validatePassage(passage, callback) {
+        var parsed = this.bcv.parse(passage),
+            options = {};
+
+        if (parsed.entities.length > 0) {
+            options.error = "none";
+            options.data = parsed;
+        } else {
+            options.error = "error";
+        }
+
+        // Make sure the callback is a function​
+        if (typeof callback === "function") {
+            // Execute the callback function and pass the parameters to it​
+            callback(options);
+        }
+    }
+
+    /** Creates element tag input */
+    createTagElement(passage) {
+        var $this = this,
+            elements = this.inputDom.querySelector('.bv_elements'),
+            template = this.inputDom.querySelector('.bv_element--template').innerHTML,
+            output = {},
+            idx = elements.querySelectorAll('.element'),
+            readable = new Readable(),
+            verse;
+
+        Mustache.tags = ["<%", "%>"];
+        Mustache.parse(template);
+
+        output.osis = passage.osis();
+        output.passage = readable.osis_to_readable("long", output.osis);
+        output.idx = idx.length + 1;
+
+        var element = Mustache.render(template, output);
+        $(this.inputDom).find('.bv_elements').append(element);
+
+        var anims = elements.querySelectorAll('.el-anim');
+        setTimeout(function () {
+            for (var i = 0; i < anims.length; i++) {
+                anims[i].classList.remove('el-anim');
+            }
+        }, 20);
+
+        // Load passage into cache for HUD.
+        Craft.postActionRequest('verses/ajax/getPassages', {
+            'apiType': 'search',
+            'query': output.osis,
+            'version': $this._modal._container.dataset.version
+        }, function () {});
+
+        this.clearField();
+    }
+
+    /** Delete and element from list */
+    deleteElement(elm) {
+        var el = elm;
+        el.parentNode.removeChild(el);
+        this.reindexElements();
+    }
+
+    /**
+     * When element is removed reindex input name arrays
+     */
+    reindexElements() {
+        var elmWrapper = this.inputDom.querySelector('.bv_elements'),
+            elements = elmWrapper.querySelectorAll('.element--input');
+        var regex = new RegExp(/([^a-zA-Z]\d*\])/);
+        var t = 1,
+            i = 1,
+            m = 1;
+        while (i - 1 < elements.length) {
+            var name = elements[i - 1].getAttribute('name');
+            var newname = name.replace(regex, "[" + t + "]");
+            elements[i - 1].setAttribute('name', newname);
+            i++;
+            // only increment t every two times. 
+            if (m == 2) {
                 m = 1;
-            while (i - 1 < elements.length) {
-                var name = elements[i - 1].getAttribute('name');
-                var newname = name.replace(regex, "[" + t + "]");
-                elements[i - 1].setAttribute('name', newname);
-                i++;
-                // only increment t every two times. 
-                if (m == 2) {
-                    m = 1;
-                    t++;
-                } else {
-                    m++;
-                }
+                t++;
+            } else {
+                m++;
             }
         }
-    }, {
-        key: 'clearField',
-        value: function clearField() {
-            var field = this.inputDom.querySelector('.bv_action--field');
-            field.value = "";
-        }
-    }, {
-        key: 'whichTransitionEvent',
-        value: function whichTransitionEvent() {
-            var t,
-                el = document.createElement("fakeelement");
+    }
 
-            var transitions = {
-                "transition": "transitionend",
-                "OTransition": "oTransitionEnd",
-                "MozTransition": "transitionend",
-                "WebkitTransition": "webkitTransitionEnd"
-            };
+    clearField() {
+        var field = this.inputDom.querySelector('.bv_action--field');
+        field.value = "";
+    }
 
-            for (t in transitions) {
-                if (el.style[t] !== undefined) {
-                    return transitions[t];
-                }
+    whichTransitionEvent() {
+        var t,
+            el = document.createElement("fakeelement");
+
+        var transitions = {
+            "transition": "transitionend",
+            "OTransition": "oTransitionEnd",
+            "MozTransition": "transitionend",
+            "WebkitTransition": "webkitTransitionEnd"
+        };
+
+        for (t in transitions) {
+            if (el.style[t] !== undefined) {
+                return transitions[t];
             }
         }
-    }, {
-        key: 'inputDom',
-        get: function get() {
-            return this._inputDom;
-        },
-        set: function set(obj) {
-            this._inputDom = obj;
-        }
-    }, {
-        key: 'bcv',
-        get: function get() {
-            return this._bcv;
-        },
-        set: function set(newBCV) {
-            this._bcv = newBCV;
-        }
-    }, {
-        key: 'modal',
-        get: function get() {
-            return this._modal;
-        }
-    }]);
+    }
+}
+class Readable {
 
-    return BvInput;
-}();
-
-var Readable = function () {
-    function Readable(options) {
-        _classCallCheck(this, Readable);
-
+    constructor(options) {
         this._abbrevs = {
             "Gen": ["Genesis", "Gen", "Ge"],
             "Exod": ["Exodus", "Exod", "Ex"],
@@ -399,9 +368,9 @@ var Readable = function () {
             "bc": " ",
             "bv": " ",
             "cv": ":",
-            "range_b": '\u2014',
-            "range_c": '\u2014',
-            "range_v": '\u2013',
+            "range_b": "\u2014",
+            "range_c": "\u2014",
+            "range_v": "\u2013",
             "sequence": ", "
         };
 
@@ -417,168 +386,155 @@ var Readable = function () {
         this._bcv = new bcv_parser();
     }
 
-    _createClass(Readable, [{
-        key: 'osis_to_readable',
-        value: function osis_to_readable(output_type, osis) {
-            var end, ref, start;
-            ref = osis.split("-"), start = ref[0], end = ref[1];
-            if (end != null) {
-                return this.handle_range(start, end, output_type);
-            } else {
-                return this.handle_single(start, output_type);
-            }
+    get abbrevs() {
+        return this._abbrevs;
+    }
+
+    set abbrevs(newABB) {
+        this._abbrevs = newABB;
+    }
+
+    get bcv() {
+        return this._bcv;
+    }
+
+    set bcv(newBCV) {
+        this._bcv = newBCV;
+    }
+
+    osis_to_readable(output_type, osis) {
+        var end, ref, start;
+        ref = osis.split("-"), start = ref[0], end = ref[1];
+        if (end != null) {
+            return this.handle_range(start, end, output_type);
+        } else {
+            return this.handle_single(start, output_type);
         }
-    }, {
-        key: 'handle_range',
-        value: function handle_range(start, end, output_type) {
-            var $this = this,
-                eb,
-                ec,
-                ev,
-                is_single_chapter,
-                ref,
-                ref1,
-                sb,
-                sc,
-                sv;
-            ref = start.split("."), sb = ref[0], sc = ref[1], sv = ref[2];
-            ref1 = end.split("."), eb = ref1[0], ec = ref1[1], ev = ref1[2];
-            if (sb === eb) {
-                if (sc === ec) {
-                    return "" + this.handle_single(start, output_type, true, true) + this.separators.range_v + ev;
-                } else {
-                    if (ev != null) {
-                        if (sv == null) {
-                            start += ".1";
-                        }
-                        return "" + this.handle_single(start, output_type, false, true) + this.separators.range_c + ec + this.separators.cv + ev;
-                    } else if (sv != null) {
-                        return "" + this.handle_single(start, output_type, false, true) + this.separators.range_c + ec + this.separators.cv + get_end_verse(eb, ec);
-                    } else {
-                        return "" + this.handle_single(start, output_type, false, true) + this.separators.range_c + ec;
+    }
+
+    handle_range(start, end, output_type) {
+        var $this = this,
+            eb,
+            ec,
+            ev,
+            is_single_chapter,
+            ref,
+            ref1,
+            sb,
+            sc,
+            sv;
+        ref = start.split("."), sb = ref[0], sc = ref[1], sv = ref[2];
+        ref1 = end.split("."), eb = ref1[0], ec = ref1[1], ev = ref1[2];
+        if (sb === eb) {
+            if (sc === ec) {
+                return "" + this.handle_single(start, output_type, true, true) + this.separators.range_v + ev;
+            } else {
+                if (ev != null) {
+                    if (sv == null) {
+                        start += ".1";
                     }
+                    return "" + this.handle_single(start, output_type, false, true) + this.separators.range_c + ec + this.separators.cv + ev;
+                } else if (sv != null) {
+                    return "" + this.handle_single(start, output_type, false, true) + this.separators.range_c + ec + this.separators.cv + get_end_verse(eb, ec);
+                } else {
+                    return "" + this.handle_single(start, output_type, false, true) + this.separators.range_c + ec;
                 }
-            } else if (ec != null) {
-                if (sc == null) {
-                    start += ".1";
-                }
-                if (ev != null && sv == null) {
-                    start += ".1";
-                }
-                if (sv != null && ev == null) {
+            }
+        } else if (ec != null) {
+            if (sc == null) {
+                start += ".1";
+            }
+            if (ev != null && sv == null) {
+                start += ".1";
+            }
+            if (sv != null && ev == null) {
+                end += "." + get_end_verse(eb, ec);
+            }
+            return "" + this.handle_single(start, output_type, true, true) + this.separators.range_b + this.handle_single(end, output_type, true);
+        } else {
+            is_single_chapter = true;
+            if (sc != null) {
+                ec = get_end_chapter(eb);
+                end += "." + ec;
+                if (sv != null) {
                     end += "." + get_end_verse(eb, ec);
                 }
-                return "" + this.handle_single(start, output_type, true, true) + this.separators.range_b + this.handle_single(end, output_type, true);
             } else {
-                is_single_chapter = true;
-                if (sc != null) {
-                    ec = get_end_chapter(eb);
-                    end += "." + ec;
-                    if (sv != null) {
-                        end += "." + get_end_verse(eb, ec);
-                    }
-                } else {
-                    is_single_chapter = false;
-                }
-                return "" + this.handle_single(start, output_type, is_single_chapter, true) + this.separators.range_b + this.handle_single(end, output_type, is_single_chapter);
+                is_single_chapter = false;
             }
+            return "" + this.handle_single(start, output_type, is_single_chapter, true) + this.separators.range_b + this.handle_single(end, output_type, is_single_chapter);
         }
-    }, {
-        key: 'handle_single',
-        value: function handle_single(osis, output_type, is_single_chapter, is_range_start) {
-            var b, c, ref, v;
-            if (is_single_chapter == null) {
-                is_single_chapter = true;
-            }
-            if (is_range_start == null) {
-                is_range_start = false;
-            }
-            ref = osis.split("."), b = ref[0], c = ref[1], v = ref[2];
-            if (c != null) {
-                if (v != null) {
-                    if (c === "1" && (v !== "1" || is_range_start) && this.is_single_chapter_book(b)) {
-                        return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bv + v;
-                    } else {
-                        return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bc + c + this.separators.cv + v;
-                    }
+    }
+
+    handle_single(osis, output_type, is_single_chapter, is_range_start) {
+        var b, c, ref, v;
+        if (is_single_chapter == null) {
+            is_single_chapter = true;
+        }
+        if (is_range_start == null) {
+            is_range_start = false;
+        }
+        ref = osis.split("."), b = ref[0], c = ref[1], v = ref[2];
+        if (c != null) {
+            if (v != null) {
+                if (c === "1" && (v !== "1" || is_range_start) && this.is_single_chapter_book(b)) {
+                    return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bv + v;
                 } else {
-                    return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bc + c;
+                    return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bc + c + this.separators.cv + v;
                 }
             } else {
-                return this.get_best_book(b, output_type, is_single_chapter);
+                return "" + this.get_best_book(b, output_type, is_single_chapter) + this.separators.bc + c;
             }
+        } else {
+            return this.get_best_book(b, output_type, is_single_chapter);
         }
-    }, {
-        key: 'get_best_book',
-        value: function get_best_book(b, output_type, is_single_chapter) {
-            var output_id;
-            output_id = this.output_types[output_type] || 0;
-            while (output_id > 0) {
-                if (this.abbrevs[b][output_id] != null) {
-                    break;
-                }
-                output_id--;
-            }
-            if (is_single_chapter && output_id === 0 && this.abbrevs[b][this.output_types["single"]] != null) {
-                output_id = this.output_types["single"];
-            }
-            return this.abbrevs[b][output_id];
-        }
-    }, {
-        key: 'is_single_chapter_book',
-        value: function is_single_chapter_book(book) {
-            var end, osis, out, ref, start;
-            if (this.single_chapter_books[book] != null) {
-                return this.single_chapter_books[book];
-            }
-            osis = this.bcv.parse(book + " 2").osis();
-            // split('-') to split('.')
-            ref = osis.split("."), start = ref[0], end = ref[1];
-            out = end != null ? false : true;
-            this.single_chapter_books[book] = out;
-            return out;
-        }
-    }, {
-        key: 'get_end_chapter',
-        value: function get_end_chapter(b) {
-            var c, end, ref, ref1, start, v;
-            ref = this.bcv.parse(b + " 1-999").osis().split("-"), start = ref[0], end = ref[1];
-            ref1 = end.split("."), b = ref1[0], c = ref1[1], v = ref1[2];
-            return c;
-        }
-    }, {
-        key: 'get_end_verse',
-        value: function get_end_verse(b, c) {
-            var end, ref, ref1, start, v;
-            ref = this.bcv.parse(b + " " + c).osis().split("-"), start = ref[0], end = ref[1];
-            ref1 = end.split("."), b = ref1[0], c = ref1[1], v = ref1[2];
-            return v;
-        }
-    }, {
-        key: 'abbrevs',
-        get: function get() {
-            return this._abbrevs;
-        },
-        set: function set(newABB) {
-            this._abbrevs = newABB;
-        }
-    }, {
-        key: 'bcv',
-        get: function get() {
-            return this._bcv;
-        },
-        set: function set(newBCV) {
-            this._bcv = newBCV;
-        }
-    }]);
+    }
 
-    return Readable;
-}();
+    get_best_book(b, output_type, is_single_chapter) {
+        var output_id;
+        output_id = this.output_types[output_type] || 0;
+        while (output_id > 0) {
+            if (this.abbrevs[b][output_id] != null) {
+                break;
+            }
+            output_id--;
+        }
+        if (is_single_chapter && output_id === 0 && this.abbrevs[b][this.output_types["single"]] != null) {
+            output_id = this.output_types["single"];
+        }
+        return this.abbrevs[b][output_id];
+    }
 
-var Modal = function () {
-    function Modal(properties) {
-        _classCallCheck(this, Modal);
+    is_single_chapter_book(book) {
+        var end, osis, out, ref, start;
+        if (this.single_chapter_books[book] != null) {
+            return this.single_chapter_books[book];
+        }
+        osis = this.bcv.parse(book + " 2").osis();
+        // split('-') to split('.')
+        ref = osis.split("."), start = ref[0], end = ref[1];
+        out = end != null ? false : true;
+        this.single_chapter_books[book] = out;
+        return out;
+    }
 
+    get_end_chapter(b) {
+        var c, end, ref, ref1, start, v;
+        ref = this.bcv.parse(b + " 1-999").osis().split("-"), start = ref[0], end = ref[1];
+        ref1 = end.split("."), b = ref1[0], c = ref1[1], v = ref1[2];
+        return c;
+    }
+
+    get_end_verse(b, c) {
+        var end, ref, ref1, start, v;
+        ref = this.bcv.parse(b + " " + c).osis().split("-"), start = ref[0], end = ref[1];
+        ref1 = end.split("."), b = ref1[0], c = ref1[1], v = ref1[2];
+        return v;
+    }
+}
+class Modal {
+
+    constructor(properties) {
         this._properties = properties;
         this._dom = this._properties.dom;
         this._garnishModal = new Garnish.Modal(this.dom.outerHTML, this._properties.settings);
@@ -599,590 +555,500 @@ var Modal = function () {
         this.initModalEvents();
     }
 
-    _createClass(Modal, [{
-        key: 'openModal',
-        value: function openModal() {
-            this.garnishModal.show();
-        }
-    }, {
-        key: 'hideModal',
-        value: function hideModal() {
-            this.garnishModal.quickHide();
-        }
+    get properties() {
+        return this._options;
+    }
 
-        /*
-         * Set modal element events
-         */
+    set properties(newOpts) {
+        this._moptions = newOpts;
+    }
 
-    }, {
-        key: 'initModalEvents',
-        value: function initModalEvents() {
+    get dom() {
+        return this._dom;
+    }
 
-            var $this = this,
-                modalDom = $this.container,
-                done = modalDom.querySelector('button.submit'),
-                cancel = modalDom.querySelector('button.cancel'),
-                select = modalDom.querySelector('.bv_modal--select'),
-                list = modalDom.querySelector('.bv_modal--verses'),
-                books = modalDom.querySelector('.books'),
-                verses = modalDom.querySelector('.chapter--verses'),
-                search = modalDom.querySelector('.bv_modal--search');
+    set dom(newDOM) {
+        this._dom = newDOM;
+    }
 
-            // Modal done button click event
-            done.addEventListener('click', function (e) {
-                e.preventDefault();
-                $this.collectVerses();
-                $this.hideModal();
-            }, false);
+    get garnishModal() {
+        return this._garnishModal;
+    }
 
-            // Modal cancel button click event
-            cancel.addEventListener('click', function (e) {
-                e.preventDefault();
-                $this.hideModal();
-            }, false);
+    set garnishModal(newGM) {
+        this._garnishModal = newGM;
+    }
 
-            // Modal book chapter click event
-            books.addEventListener('click', function (e) {
-                var ref,
-                    elm = e.target;
-                if (e.target.className === 'book') {
-                    ref = elm.dataset.bookId;
-                } else if (elm.className === 'book--name') {
-                    ref = elm.parentNode.dataset.bookId;
-                } else if (elm.className === 'book--chapter') {
-                    ref = elm.dataset.chapterId;
-                };
+    get container() {
+        return this._container;
+    }
 
-                $this.searchChapters(ref);
-            }, false);
+    set container(newCon) {
+        this._container = newCon;
+    }
 
-            // Select a verse
-            verses.addEventListener('click', function (e) {
+    get bcv() {
+        return this._bcv;
+    }
 
-                if (e.target && e.target.nodeName == "SPAN") {
-                    $this.toggleClass(e.target, 'selected');
-                } else {
-                    var result = closest(e.target, '.result');
-                    var ref = result.dataset.verseId;
-                    if (ref !== null) {
-                        var pv = $this.bcv.parse(ref).parsed_entities(),
-                            idx = pv[0].osis.lastIndexOf('.'),
-                            bc = pv[0].osis.substring(0, idx),
-                            parts = ref.split(':');
+    set bcv(newBCV) {
+        this._bcv = newBCV;
+    }
 
-                        $this.searchChapters(parts[0] + ":" + bc, function () {
-                            $this.container.addEventListener('viewChanged', $this.setVerse([ref]));
-                        });
-                    }
-                }
+    get outputVerses() {
+        return this._outputVerses;
+    }
 
-                //GET CLOSETS ELEMENT WITH SELECTOR
-                function closest(el, sel) {
-                    if (el != null) {
-                        return el.matches(sel) ? el : el.querySelector(sel) || closest(el.parentNode, sel);
-                    }
-                }
-            }, false);
+    set outputVerses(newVER) {
+        this._outputVerses = newVER;
+    }
 
-            // Toolbar list button
-            select.addEventListener('click', function (e) {
-                $this.modalState(2);
-            }, false);
+    openModal() {
+        this.garnishModal.show();
+    }
 
-            // Toolbar view button
-            list.addEventListener('click', function (e) {
-                $this.modalState(1);
-            }, false);
+    hideModal() {
+        this.garnishModal.quickHide();
+    }
 
-            // Toolbar search input
-            search.addEventListener('change', function (e) {
-                e.preventDefault();
-                var value = e.currentTarget.value;
-                $this.searchBible(value);
-            }, false);
-        }
+    /*
+     * Set modal element events
+     */
+    initModalEvents() {
 
-        /**
-         * Search bible by chapter
-         */
+        var $this = this,
+            modalDom = $this.container,
+            done = modalDom.querySelector('button.submit'),
+            cancel = modalDom.querySelector('button.cancel'),
+            select = modalDom.querySelector('.bv_modal--select'),
+            list = modalDom.querySelector('.bv_modal--verses'),
+            books = modalDom.querySelector('.books'),
+            verses = modalDom.querySelector('.chapter--verses'),
+            search = modalDom.querySelector('.bv_modal--search');
 
-    }, {
-        key: 'searchChapters',
-        value: function searchChapters(ref, callback) {
-            var $this = this;
+        // Modal done button click event
+        done.addEventListener('click', function (e) {
+            e.preventDefault();
+            $this.collectVerses();
+            $this.hideModal();
+        }, false);
 
-            // turn spinner on
-            $this.toggleSpinner();
+        // Modal cancel button click event
+        cancel.addEventListener('click', function (e) {
+            e.preventDefault();
+            $this.hideModal();
+        }, false);
 
-            Craft.postActionRequest('verses/ajax/getPassages', {
-                'apiType': 'chapters',
-                'osis': ref,
-                'endpoint': 'chapters',
-                'marginalia': false
-            }, function (data) {
-                $this.listView(data.response.chapters);
-                // Make sure the callback is a function​
-                if (typeof callback === "function") {
-                    // Execute the callback function and pass the parameters to it​
-                    callback(true);
-                }
+        // Modal book chapter click event
+        books.addEventListener('click', function (e) {
+            var ref,
+                elm = e.target;
+            if (e.target.className === 'book') {
+                ref = elm.dataset.bookId;
+            } else if (elm.className === 'book--name') {
+                ref = elm.parentNode.dataset.bookId;
+            } else if (elm.className === 'book--chapter') {
+                ref = elm.dataset.chapterId;
+            };
 
-                // output fums scripts
-                $this.fums(data.response.meta.fums_js_include);
-            });
-        }
+            $this.searchChapters(ref);
+        }, false);
 
-        /**
-         * Search bible by keyword phrase
-         */
+        // Select a verse
+        verses.addEventListener('click', function (e) {
 
-    }, {
-        key: 'searchBible',
-        value: function searchBible(value) {
-            this.modalState(1);
-            this.toggleSpinner();
+            if (e.target && e.target.nodeName == "SPAN") {
+                $this.toggleClass(e.target, 'selected');
+            } else {
+                var result = closest(e.target, '.result');
+                var ref = result.dataset.verseId;
+                if (ref !== null) {
+                    var pv = $this.bcv.parse(ref).parsed_entities(),
+                        idx = pv[0].osis.lastIndexOf('.'),
+                        bc = pv[0].osis.substring(0, idx),
+                        parts = ref.split(':');
 
-            var $this = this,
-                ref = value;
-
-            Craft.postActionRequest('verses/ajax/getPassages', {
-                'apiType': 'search',
-                'query': ref,
-                'version': $this.container.dataset.version
-            }, function (data) {
-                var results = data.response.search.result;
-                if (results.type === "verses") {
-                    $this.searchView(results.verses);
-                } else if (results.type === "passages") {
-
-                    // Get verses from chapters api 
-                    var result = results.passages[0],
-                        parsedEURL = $this.parseUrl(result.path),
-                        start_verse_id = result.start_verse_id,
-                        osis = parsedEURL.segments[1];
-                    // Get all verses in Chapter
-                    $this.searchVerses({
-                        'apiType': 'chapters',
-                        'osis': osis
-                    }, function (data) {
-
-                        // set the list with the chapter verses
-                        $this.listView(data.response.chapters);
-
-                        var start = parsedEURL.params.start,
-                            end = parsedEURL.params.end,
-                            selARY = [];
-
-                        if (start == end) {
-                            // If verse has same start as end only one osis verse needed.
-                            selARY[0] = start_verse_id;
-                        } else {
-
-                            // If more than one verses selected create an array of them.
-                            // Using start & end params to generate array of osis verses.
-                            var last_dot_idx = start_verse_id.lastIndexOf('.'),
-                                base = start_verse_id.substring(0, last_dot_idx);
-
-                            for (var i = start; i <= end; i++) {
-                                var newref = base + "." + i;
-                                selARY.push(newref);
-                            };
-
-                            // Select all verses initially searched for
-                            $this.setVerse(selARY);
-                        }
+                    $this.searchChapters(parts[0] + ":" + bc, function () {
+                        $this.container.addEventListener('viewChanged', $this.setVerse([ref]));
                     });
                 }
-
-                // output fums scripts
-                $this.fums(data.response.meta.fums_js_include);
-            });
-        }
-
-        /**
-         * Search for all verses in a Chapter
-         * @param  {object}   options  [apiType = chapters, osis = eng-ESV:Rom.5]
-         * @param  {Function} callback return verses array
-         * @return {array}            verses
-         */
-
-    }, {
-        key: 'searchVerses',
-        value: function searchVerses(options, callback) {
-
-            Craft.postActionRequest('verses/ajax/getPassages', options, function (data) {
-                // Make sure the callback is a function​
-                if (typeof callback === "function") {
-                    // Execute the callback function and pass the parameters to it​
-                    callback(data);
-                }
-            });
-        }
-
-        /*
-        * List Verses
-        */
-
-    }, {
-        key: 'listView',
-        value: function listView(data) {
-            this.modalState(1);
-            this.toggleSpinner();
-            var view = this.container.querySelectorAll('.chapter--verses')[0],
-                verses = data,
-                output = "",
-                readable = new Readable(),
-                verse = verses[0].id.split(":"),
-                heading = readable.osis_to_readable('long', verse[1]),
-                copyElm = document.createElement('div'),
-                headingElm = document.createElement('h3'),
-                verse;
-
-            var _iteratorNormalCompletion = true;
-            var _didIteratorError = false;
-            var _iteratorError = undefined;
-
-            try {
-                for (var _iterator = verses[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-                    verse = _step.value;
-
-                    output += verse.text;
-                }
-            } catch (err) {
-                _didIteratorError = true;
-                _iteratorError = err;
-            } finally {
-                try {
-                    if (!_iteratorNormalCompletion && _iterator.return) {
-                        _iterator.return();
-                    }
-                } finally {
-                    if (_didIteratorError) {
-                        throw _iteratorError;
-                    }
-                }
             }
 
-            headingElm.innerHTML = heading;
-            headingElm.classList.add('bc-heading');
-            copyElm.innerHTML = verses[0].copyright;
-            copyElm.classList.add('copyright');
+            //GET CLOSETS ELEMENT WITH SELECTOR
+            function closest(el, sel) {
+                if (el != null) {
+                    return el.matches(sel) ? el : el.querySelector(sel) || closest(el.parentNode, sel);
+                }
+            }
+        }, false);
+
+        // Toolbar list button
+        select.addEventListener('click', function (e) {
+            $this.modalState(2);
+        }, false);
+
+        // Toolbar view button
+        list.addEventListener('click', function (e) {
+            $this.modalState(1);
+        }, false);
+
+        // Toolbar search input
+        search.addEventListener('change', function (e) {
+            e.preventDefault();
+            var value = e.currentTarget.value;
+            $this.searchBible(value);
+        }, false);
+    }
+
+    /**
+     * Search bible by chapter
+     */
+    searchChapters(ref, callback) {
+        var $this = this;
+
+        // turn spinner on
+        $this.toggleSpinner();
+
+        Craft.postActionRequest('verses/ajax/getPassages', {
+            'apiType': 'chapters',
+            'osis': ref,
+            'endpoint': 'chapters',
+            'marginalia': false
+        }, function (data) {
+            $this.listView(data.response.chapters);
+            // Make sure the callback is a function​
+            if (typeof callback === "function") {
+                // Execute the callback function and pass the parameters to it​
+                callback(true);
+            }
+
+            // output fums scripts
+            $this.fums(data.response.meta.fums_js_include);
+        });
+    }
+
+    /**
+     * Search bible by keyword phrase
+     */
+    searchBible(value) {
+        this.modalState(1);
+        this.toggleSpinner();
+
+        var $this = this,
+            ref = value;
+
+        Craft.postActionRequest('verses/ajax/getPassages', {
+            'apiType': 'search',
+            'query': ref,
+            'version': $this.container.dataset.version
+        }, function (data) {
+            var results = data.response.search.result;
+            if (results.type === "verses") {
+                $this.searchView(results.verses);
+            } else if (results.type === "passages") {
+
+                // Get verses from chapters api 
+                var result = results.passages[0],
+                    parsedEURL = $this.parseUrl(result.path),
+                    start_verse_id = result.start_verse_id,
+                    osis = parsedEURL.segments[1];
+                // Get all verses in Chapter
+                $this.searchVerses({
+                    'apiType': 'chapters',
+                    'osis': osis
+                }, function (data) {
+
+                    // set the list with the chapter verses
+                    $this.listView(data.response.chapters);
+
+                    var start = parsedEURL.params.start,
+                        end = parsedEURL.params.end,
+                        selARY = [];
+
+                    if (start == end) {
+                        // If verse has same start as end only one osis verse needed.
+                        selARY[0] = start_verse_id;
+                    } else {
+
+                        // If more than one verses selected create an array of them.
+                        // Using start & end params to generate array of osis verses.
+                        var last_dot_idx = start_verse_id.lastIndexOf('.'),
+                            base = start_verse_id.substring(0, last_dot_idx);
+
+                        for (var i = start; i <= end; i++) {
+                            var newref = base + "." + i;
+                            selARY.push(newref);
+                        };
+
+                        // Select all verses initially searched for
+                        $this.setVerse(selARY);
+                    }
+                });
+            }
+
+            // output fums scripts
+            $this.fums(data.response.meta.fums_js_include);
+        });
+    }
+
+    /**
+     * Search for all verses in a Chapter
+     * @param  {object}   options  [apiType = chapters, osis = eng-ESV:Rom.5]
+     * @param  {Function} callback return verses array
+     * @return {array}            verses
+     */
+    searchVerses(options, callback) {
+
+        Craft.postActionRequest('verses/ajax/getPassages', options, function (data) {
+            // Make sure the callback is a function​
+            if (typeof callback === "function") {
+                // Execute the callback function and pass the parameters to it​
+                callback(data);
+            }
+        });
+    }
+
+    /*
+    * List Verses
+    */
+    listView(data) {
+        this.modalState(1);
+        this.toggleSpinner();
+        var view = this.container.querySelectorAll('.chapter--verses')[0],
+            verses = data,
+            output = "",
+            readable = new Readable(),
+            verse = verses[0].id.split(":"),
+            heading = readable.osis_to_readable('long', verse[1]),
+            copyElm = document.createElement('div'),
+            headingElm = document.createElement('h3'),
+            verse;
+
+        for (verse of verses) {
+            output += verse.text;
+        }
+
+        headingElm.innerHTML = heading;
+        headingElm.classList.add('bc-heading');
+        copyElm.innerHTML = verses[0].copyright;
+        copyElm.classList.add('copyright');
+
+        view.innerHTML = output;
+        view.appendChild(copyElm);
+        view.insertBefore(headingElm, view.firstChild);
+
+        this.container.dispatchEvent(this.viewChanged);
+    }
+
+    /**
+     * Ouputs the search results to the chapter--verses dom
+     * @param  {obj} data {array of verses}
+     */
+    searchView(data) {
+        this.modalState(1);
+        this.toggleSpinner();
+        var view = this.container.querySelectorAll('.chapter--verses')[0],
+            template = document.querySelector('.bv_result--template').innerHTML,
+            results = data,
+            copy = document.createElement('div'),
+            output = "",
+            result;
+
+        if (results !== undefined) {
+
+            Mustache.tags = ["<%", "%>"];
+            Mustache.parse(template);
+
+            for (result of results) {
+                output += Mustache.render(template, result);
+            }
+
+            copy.innerHTML = results[0].copyright;
+            copy.classList.add('copyright');
 
             view.innerHTML = output;
-            view.appendChild(copyElm);
-            view.insertBefore(headingElm, view.firstChild);
+            view.appendChild(copy);
+        } else {
+            this.modalState(3);
+        }
+    }
 
-            this.container.dispatchEvent(this.viewChanged);
+    /**
+     * Selects the verses searched for in chapter--verses dom
+     * @param {array} refs [array of osis chapter verses  eng-ESV:Rom.8.28]
+     */
+    setVerse(refs) {
+
+        var view = this.container.querySelector('.chapter--verses'),
+            readable = new Readable(),
+            abbrevs = readable.abbrevs;
+
+        if (refs.length > 0) {
+            for (var i = 0; i < refs.length; i++) {
+                var parts = refs[i].split(':'),
+                    bc = parts[1].trim(),
+                    partials = bc.split('.'),
+                    index = abbrevs.indexOfKey(partials[0]),
+                    selector = "span.v" + index + "_" + partials[1] + "_" + partials[2],
+                    v = view.querySelectorAll(selector)[0];
+                v.classList.add('selected');
+            }
+        }
+    }
+
+    /*
+     * Set the state of the modal
+     * Toggle specific views
+     */
+    modalState(pos) {
+        var modalDom = this.container,
+            select = modalDom.querySelector('.bv_modal--select'),
+            list = modalDom.querySelector('.bv_modal--verses');
+
+        if (pos === 1) {
+            modalDom.classList.add('state1');
+            modalDom.classList.remove('state2');
+            modalDom.classList.remove('state3');
         }
 
-        /**
-         * Ouputs the search results to the chapter--verses dom
-         * @param  {obj} data {array of verses}
-         */
+        if (pos === 2) {
+            modalDom.classList.add('state2');
+            modalDom.classList.remove('state1');
+            modalDom.classList.remove('state3');
+        }
 
-    }, {
-        key: 'searchView',
-        value: function searchView(data) {
-            this.modalState(1);
-            this.toggleSpinner();
-            var view = this.container.querySelectorAll('.chapter--verses')[0],
-                template = document.querySelector('.bv_result--template').innerHTML,
-                results = data,
-                copy = document.createElement('div'),
-                output = "",
-                result;
+        if (pos === 3) {
+            modalDom.classList.remove('state1');
+            modalDom.classList.remove('state2');
+            modalDom.classList.add('state3');
+        }
 
-            if (results !== undefined) {
+        this.toggleClass(select, 'active');
+        this.toggleClass(list, 'active');
+    }
 
-                Mustache.tags = ["<%", "%>"];
-                Mustache.parse(template);
+    /**
+     * Collect all verses with class selected from modal list
+     * Sets modal variable outputVerses
+     */
+    collectVerses() {
+        var list = this.container.querySelector('.bv_modal--list'),
+            collection = [],
+            output = [],
+            sel = list.querySelectorAll('.selected > sup');
 
-                var _iteratorNormalCompletion2 = true;
-                var _didIteratorError2 = false;
-                var _iteratorError2 = undefined;
+        for (var i = 0; i < sel.length; i++) {
+            var item = sel[i];
+            collection.push(item.getAttribute('id'));
+        }
 
-                try {
-                    for (var _iterator2 = results[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                        result = _step2.value;
+        var parsed = this.bcv.parse(collection.join(',')),
+            readable = new Readable();
 
-                        output += Mustache.render(template, result);
+        if (this.separateVerses(parsed.osis())) {
+            // multiple verses
+            var osS = parsed.osis();
+            var mVs = osS.split(',');
+            for (var i = 0, ii = mVs.length; i < ii; i++) {
+                output.push(readable.osis_to_readable('long', mVs[i]));
+            }
+        } else {
+            // single verse
+            output.push(readable.osis_to_readable('long', parsed.osis()));
+        }
+
+        // set modal variable outputVerses
+        this.outputVerses = output;
+
+        // dispatch versesReady event
+        this.dom.dispatchEvent(this.versesReady);
+    }
+
+    /**
+     * TOGGLE NODE CLASS ie9+
+     */
+    toggleClass(el, className) {
+        if (el.classList) {
+            el.classList.toggle(className);
+        } else {
+            var classes = el.className.split(' ');
+            var existingIndex = classes.indexOf(className);
+
+            if (existingIndex >= 0) classes.splice(existingIndex, 1);else classes.push(className);
+
+            el.className = classes.join(' ');
+        }
+    }
+
+    /**
+     * Check if passage is multiple verses if so split return array of verses.
+     * @param  {string} passage string of bible verse(s)
+     * @return {array}  array of verses split comma
+     */
+    separateVerses(passage) {
+        if (passage.indexOf(',') !== -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * parse a url into its parts
+     * @param  {string} url 
+     * @return {object} parts of a url
+     */
+    parseUrl(url) {
+        var a = document.createElement('a');
+        a.href = url;
+        return {
+            source: url,
+            protocol: a.protocol.replace(':', ''),
+            host: a.hostname,
+            port: a.port,
+            query: a.search,
+            params: function () {
+                var ret = {},
+                    seg = a.search.replace(/^\?/, '').split('&'),
+                    len = seg.length,
+                    i = 0,
+                    s;
+                for (; i < len; i++) {
+                    if (!seg[i]) {
+                        continue;
                     }
-                } catch (err) {
-                    _didIteratorError2 = true;
-                    _iteratorError2 = err;
-                } finally {
-                    try {
-                        if (!_iteratorNormalCompletion2 && _iterator2.return) {
-                            _iterator2.return();
-                        }
-                    } finally {
-                        if (_didIteratorError2) {
-                            throw _iteratorError2;
-                        }
-                    }
+                    s = seg[i].split('=');
+                    ret[s[0]] = s[1];
                 }
+                return ret;
+            }(),
+            file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
+            hash: a.hash.replace('#', ''),
+            path: a.pathname.replace(/^([^\/])/, '/$1'),
+            relative: (a.href.match(/tp:\/\/[^\/]+(.+)/) || [, ''])[1],
+            segments: a.pathname.replace(/^\//, '').split('/')
+        };
+    }
 
-                copy.innerHTML = results[0].copyright;
-                copy.classList.add('copyright');
+    /**
+     * Append bibles.org FUMS scripts to body
+     * @param  {string} codeURL url to js file
+     */
+    fums(codeURL) {
+        var JS = document.createElement('script');
+        JS.setAttribute('src', '//' + codeURL);
+        document.body.appendChild(JS);
+    }
 
-                view.innerHTML = output;
-                view.appendChild(copy);
-            } else {
-                this.modalState(3);
-            }
-        }
+    /*
+    * Toggle spinner
+    */
+    toggleSpinner() {
+        var spinner = this.container.querySelector('.spinner');
+        this.toggleClass(spinner, 'hidden');
+    }
 
-        /**
-         * Selects the verses searched for in chapter--verses dom
-         * @param {array} refs [array of osis chapter verses  eng-ESV:Rom.8.28]
-         */
-
-    }, {
-        key: 'setVerse',
-        value: function setVerse(refs) {
-
-            var view = this.container.querySelector('.chapter--verses'),
-                readable = new Readable(),
-                abbrevs = readable.abbrevs;
-
-            if (refs.length > 0) {
-                for (var i = 0; i < refs.length; i++) {
-                    var parts = refs[i].split(':'),
-                        bc = parts[1].trim(),
-                        partials = bc.split('.'),
-                        index = abbrevs.indexOfKey(partials[0]),
-                        selector = "span.v" + index + "_" + partials[1] + "_" + partials[2],
-                        v = view.querySelectorAll(selector)[0];
-                    v.classList.add('selected');
-                }
-            }
-        }
-
-        /*
-         * Set the state of the modal
-         * Toggle specific views
-         */
-
-    }, {
-        key: 'modalState',
-        value: function modalState(pos) {
-            var modalDom = this.container,
-                select = modalDom.querySelector('.bv_modal--select'),
-                list = modalDom.querySelector('.bv_modal--verses');
-
-            if (pos === 1) {
-                modalDom.classList.add('state1');
-                modalDom.classList.remove('state2');
-                modalDom.classList.remove('state3');
-            }
-
-            if (pos === 2) {
-                modalDom.classList.add('state2');
-                modalDom.classList.remove('state1');
-                modalDom.classList.remove('state3');
-            }
-
-            if (pos === 3) {
-                modalDom.classList.remove('state1');
-                modalDom.classList.remove('state2');
-                modalDom.classList.add('state3');
-            }
-
-            this.toggleClass(select, 'active');
-            this.toggleClass(list, 'active');
-        }
-
-        /**
-         * Collect all verses with class selected from modal list
-         * Sets modal variable outputVerses
-         */
-
-    }, {
-        key: 'collectVerses',
-        value: function collectVerses() {
-            var list = this.container.querySelector('.bv_modal--list'),
-                collection = [],
-                output = [],
-                sel = list.querySelectorAll('.selected > sup');
-
-            for (var i = 0; i < sel.length; i++) {
-                var item = sel[i];
-                collection.push(item.getAttribute('id'));
-            }
-
-            var parsed = this.bcv.parse(collection.join(',')),
-                readable = new Readable();
-
-            if (this.separateVerses(parsed.osis())) {
-                // multiple verses
-                var osS = parsed.osis();
-                var mVs = osS.split(',');
-                for (var i = 0, ii = mVs.length; i < ii; i++) {
-                    output.push(readable.osis_to_readable('long', mVs[i]));
-                }
-            } else {
-                // single verse
-                output.push(readable.osis_to_readable('long', parsed.osis()));
-            }
-
-            // set modal variable outputVerses
-            this.outputVerses = output;
-
-            // dispatch versesReady event
-            this.dom.dispatchEvent(this.versesReady);
-        }
-
-        /**
-         * TOGGLE NODE CLASS ie9+
-         */
-
-    }, {
-        key: 'toggleClass',
-        value: function toggleClass(el, className) {
-            if (el.classList) {
-                el.classList.toggle(className);
-            } else {
-                var classes = el.className.split(' ');
-                var existingIndex = classes.indexOf(className);
-
-                if (existingIndex >= 0) classes.splice(existingIndex, 1);else classes.push(className);
-
-                el.className = classes.join(' ');
-            }
-        }
-
-        /**
-         * Check if passage is multiple verses if so split return array of verses.
-         * @param  {string} passage string of bible verse(s)
-         * @return {array}  array of verses split comma
-         */
-
-    }, {
-        key: 'separateVerses',
-        value: function separateVerses(passage) {
-            if (passage.indexOf(',') !== -1) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        /**
-         * parse a url into its parts
-         * @param  {string} url 
-         * @return {object} parts of a url
-         */
-
-    }, {
-        key: 'parseUrl',
-        value: function parseUrl(url) {
-            var a = document.createElement('a');
-            a.href = url;
-            return {
-                source: url,
-                protocol: a.protocol.replace(':', ''),
-                host: a.hostname,
-                port: a.port,
-                query: a.search,
-                params: function () {
-                    var ret = {},
-                        seg = a.search.replace(/^\?/, '').split('&'),
-                        len = seg.length,
-                        i = 0,
-                        s;
-                    for (; i < len; i++) {
-                        if (!seg[i]) {
-                            continue;
-                        }
-                        s = seg[i].split('=');
-                        ret[s[0]] = s[1];
-                    }
-                    return ret;
-                }(),
-                file: (a.pathname.match(/\/([^\/?#]+)$/i) || [, ''])[1],
-                hash: a.hash.replace('#', ''),
-                path: a.pathname.replace(/^([^\/])/, '/$1'),
-                relative: (a.href.match(/tp:\/\/[^\/]+(.+)/) || [, ''])[1],
-                segments: a.pathname.replace(/^\//, '').split('/')
-            };
-        }
-
-        /**
-         * Append bibles.org FUMS scripts to body
-         * @param  {string} codeURL url to js file
-         */
-
-    }, {
-        key: 'fums',
-        value: function fums(codeURL) {
-            var JS = document.createElement('script');
-            JS.setAttribute('src', '//' + codeURL);
-            document.body.appendChild(JS);
-        }
-
-        /*
-        * Toggle spinner
-        */
-
-    }, {
-        key: 'toggleSpinner',
-        value: function toggleSpinner() {
-            var spinner = this.container.querySelector('.spinner');
-            this.toggleClass(spinner, 'hidden');
-        }
-    }, {
-        key: 'properties',
-        get: function get() {
-            return this._options;
-        },
-        set: function set(newOpts) {
-            this._moptions = newOpts;
-        }
-    }, {
-        key: 'dom',
-        get: function get() {
-            return this._dom;
-        },
-        set: function set(newDOM) {
-            this._dom = newDOM;
-        }
-    }, {
-        key: 'garnishModal',
-        get: function get() {
-            return this._garnishModal;
-        },
-        set: function set(newGM) {
-            this._garnishModal = newGM;
-        }
-    }, {
-        key: 'container',
-        get: function get() {
-            return this._container;
-        },
-        set: function set(newCon) {
-            this._container = newCon;
-        }
-    }, {
-        key: 'bcv',
-        get: function get() {
-            return this._bcv;
-        },
-        set: function set(newBCV) {
-            this._bcv = newBCV;
-        }
-    }, {
-        key: 'outputVerses',
-        get: function get() {
-            return this._outputVerses;
-        },
-        set: function set(newVER) {
-            this._outputVerses = newVER;
-        }
-    }]);
-
-    return Modal;
-}();
-
+}
 (function () {
 
     // Extension of Array to help find elements in array
@@ -1228,10 +1094,10 @@ var Modal = function () {
     window.CustomEvent = CustomEvent;
 
     Object.defineProperty(Object.prototype, "indexOfKey", {
-        value: function value(_value) {
+        value: function (value) {
             var i = 1;
             for (var key in this) {
-                if (key == _value) {
+                if (key == value) {
                     return i;
                 }
                 i++;
@@ -1244,6 +1110,6 @@ var Modal = function () {
     var bvinputs = document.querySelectorAll('.bv_field');
 
     for (var i = bvinputs.length - 1; i >= 0; i--) {
-        var bv = new BvInput({ item: bvinputs[i].getAttribute('id') });
+        let bv = new BvInput({ item: bvinputs[i].getAttribute('id') });
     };
 })();
